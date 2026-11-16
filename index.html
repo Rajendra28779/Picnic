@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Picnic 2026</title>
+<script>
+  // Page stays visible until the end of 30 Nov 2026 (local time), then shows an expired message.
+  if (new Date() > new Date(2026, 10, 30, 23, 59, 59)) document.documentElement.classList.add('expired');
+</script>
+<style>
+  #expiredMsg { display: none; }
+  html.expired #expiredMsg {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px; text-align: center; font-family: "Segoe UI", system-ui, Arial, sans-serif;
+    background: linear-gradient(135deg, #4f46e5, #0ea5e9); color: #fff;
+  }
+  html.expired header, html.expired main, html.expired .modal-overlay { display: none !important; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --head: #0f172a;
+    --zebra: #f8fafc;
+    --shadow: 0 1px 2px rgba(15,23,42,.06), 0 4px 16px rgba(15,23,42,.06);
+    --hero1: #4f46e5;
+    --hero2: #0ea5e9;
+    --green: #16a34a;
+    --amber: #f59e0b;
+    --rose: #e11d48;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0b1120; --card: #161f33; --text: #e2e8f0; --muted: #94a3b8; --border: #26324a; --head: #f8fafc; --zebra: #1b2640; --shadow: 0 4px 20px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0b1120; --card: #161f33; --text: #e2e8f0; --muted: #94a3b8; --border: #26324a; --head: #f8fafc; --zebra: #1b2640; --shadow: 0 4px 20px rgba(0,0,0,.35);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    background: var(--bg); color: var(--text);
+    line-height: 1.45;
+  }
+  .hero {
+    background: linear-gradient(135deg, var(--hero1), var(--hero2));
+    color: #fff; padding: 36px 20px 80px; text-align: center;
+  }
+  .hero h1 { margin: 0 0 6px; font-size: 2.1rem; letter-spacing: .3px; }
+  .hero p { margin: 0; opacity: .9; }
+  .hero-tag {
+    display: inline-block; margin-top: 16px; padding: 6px 16px; border-radius: 999px;
+    background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35);
+    font-weight: 700; letter-spacing: .5px;
+  }
+  .hero-meta { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; }
+  .hero-meta span {
+    font-size: .85rem; padding: 4px 12px; border-radius: 999px; background: rgba(0,0,0,.15);
+  }
+  .container { max-width: 1200px; margin: -56px auto 0; padding: 0 16px 32px; }
+
+  .stats { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); margin-bottom: 20px; }
+  .stat {
+    background: var(--card); border-radius: 16px; padding: 18px 16px;
+    box-shadow: var(--shadow); border-top: 4px solid var(--accent, var(--hero1));
+  }
+  .stat .label { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .6px; }
+  .stat .value { font-size: 1.6rem; font-weight: 700; color: var(--head); margin-top: 4px; }
+  .stat .hint { color: var(--muted); font-size: .8rem; margin-top: 2px; }
+
+  .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+  .card {
+    background: var(--card); border-radius: 16px; padding: 20px;
+    box-shadow: var(--shadow); overflow-x: auto;
+  }
+  .wide { grid-column: 1 / -1; }
+  h2 {
+    font-size: 1.05rem; margin: 0 0 14px; color: var(--head);
+    display: flex; align-items: center; gap: 10px;
+  }
+  h2::before {
+    content: ""; width: 4px; height: 18px; border-radius: 4px;
+    background: linear-gradient(var(--hero1), var(--hero2));
+  }
+  h3 { font-size: .95rem; margin: 22px 0 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .chart-box { position: relative; height: 320px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  th, td { text-align: left; padding: 9px 10px; }
+  thead th, tr.head th {
+    color: var(--muted); font-weight: 600; font-size: .78rem;
+    text-transform: uppercase; letter-spacing: .5px; border-bottom: 2px solid var(--border);
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:nth-child(even) { background: var(--zebra); }
+  tbody tr:hover { background: rgba(79,70,229,.08); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.total td { font-weight: 700; color: var(--head); border-top: 2px solid var(--border); background: none; }
+
+  .tag { display: inline-block; min-width: 26px; text-align: center; padding: 2px 8px; border-radius: 999px; font-size: .75rem; font-weight: 700; color: #fff; }
+  .tag.M { background: #4f46e5; }
+  .tag.C { background: var(--green); }
+  .tag.V { background: var(--amber); }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .75rem; font-weight: 600; background: rgba(22,163,74,.15); color: var(--green); }
+  .none { color: var(--muted); }
+
+  .menu-item { padding: 12px; border-radius: 12px; background: var(--zebra); margin-bottom: 10px; }
+  .menu-item b { display: block; color: var(--head); margin-bottom: 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: .8rem; padding: 4px 10px; border-radius: 999px; background: var(--card); border: 1px solid var(--border); }
+
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .card-head h2 { margin: 0; }
+  .icon-btn {
+    border: 1px solid var(--border); background: var(--zebra); color: var(--hero1);
+    width: 36px; height: 36px; border-radius: 10px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: background .15s, transform .15s;
+  }
+  .icon-btn:hover { background: rgba(79,70,229,.12); transform: translateY(-1px); }
+  .block { margin-bottom: 20px; }
+  .stat.clickable { cursor: pointer; transition: transform .15s, box-shadow .15s; }
+  .stat.clickable:hover, .stat.clickable:focus-visible { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(225,29,72,.25); outline: none; }
+  .sgroup { margin-bottom: 16px; }
+  .sgroup-title {
+    display: flex; align-items: center; gap: 8px; margin: 0 0 8px;
+    font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px;
+    color: var(--gc);
+  }
+  .sgroup-title svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .gcount {
+    font-size: .72rem; padding: 1px 8px; border-radius: 999px; color: #fff; background: var(--gc);
+  }
+  .sgroup .item-tile { border-left: 3px solid var(--gc); }
+  .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; }
+  .menu-grid .menu-item {
+    margin-bottom: 0; padding: 9px 12px;
+    background: color-mix(in srgb, var(--mc) 9%, var(--card));
+    border: 1px solid color-mix(in srgb, var(--mc) 25%, var(--border));
+    border-left: 4px solid var(--mc);
+  }
+  .menu-grid .menu-item b {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
+    font-size: .9rem; color: var(--mc);
+  }
+  .menu-grid .menu-item b svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .menu-grid .chips { gap: 5px; }
+  .menu-grid .chip {
+    padding: 2px 9px; font-size: .78rem; background: var(--card);
+    border-color: color-mix(in srgb, var(--mc) 35%, var(--border));
+  }
+  .count { font-size: .75rem; font-weight: 600; color: var(--muted); background: var(--zebra); border: 1px solid var(--border); padding: 2px 10px; border-radius: 999px; margin-left: 6px; }
+  .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+  .item-tile {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    background: var(--zebra); border: 1px solid var(--border); border-radius: 12px;
+    padding: 10px 12px; font-size: .9rem; transition: transform .15s, border-color .15s;
+  }
+  .item-tile:hover { transform: translateY(-2px); border-color: var(--hero1); }
+  .item-tile .q { color: var(--hero1); font-weight: 700; white-space: nowrap; font-size: .85rem; }
+  .stat.clickable { cursor: pointer; }
+  .modal.wide-modal { max-width: min(1000px, 100%); }
+  .ctable-wrap th, .ctable-wrap td { padding: 8px 10px; white-space: nowrap; }
+  .ctable-wrap .extra-in { width: 110px; }
+  .csum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+  .ci {
+    display: flex; align-items: center; gap: 10px; min-width: 0;
+    background: var(--zebra); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px;
+    border-left: 4px solid var(--ic, var(--hero1));
+  }
+  .ci i {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px; display: inline-flex;
+    align-items: center; justify-content: center; color: var(--ic, var(--hero1));
+    background: color-mix(in srgb, var(--ic, #4f46e5) 15%, transparent);
+  }
+  .ci > div { min-width: 0; }
+  @media (max-width: 560px) { .csum { grid-template-columns: 1fr; } }
+  .csum span { display: block; font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .csum b { font-size: 1.1rem; color: var(--head); }
+  .ctable-wrap { overflow-x: auto; }
+  .center { text-align: center; }
+  input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; }
+  .extra-in {
+    width: 100px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--card); color: var(--text); text-align: right; font: inherit;
+  }
+  .extra-in:focus { outline: 2px solid var(--hero1); border-color: transparent; }
+  .hint-note { font-size: .8rem; color: var(--muted); margin: 12px 0 0; }
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(15,23,42,.55);
+    display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 50;
+  }
+  .modal-overlay[hidden] { display: none; }
+  .modal {
+    background: var(--card); border-radius: 16px; padding: 20px; width: 100%; max-width: 420px;
+    max-height: 85vh; overflow: auto; box-shadow: 0 20px 50px rgba(0,0,0,.3);
+  }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .modal-head h2 { margin: 0; }
+  .modal-close {
+    border: 0; background: var(--zebra); color: var(--text); width: 32px; height: 32px;
+    border-radius: 50%; font-size: 1.3rem; line-height: 1; cursor: pointer;
+  }
+  .modal-close:hover { background: var(--border); }
+  @media (max-width: 600px) {
+    .hero { padding: 28px 16px 70px; }
+    .hero h1 { font-size: 1.6rem; }
+    .container { margin-top: -48px; padding: 0 12px 24px; }
+    .grid { grid-template-columns: 1fr; gap: 16px; }
+    .card { padding: 16px; }
+    .chart-box { height: 280px; }
+    .stat .value { font-size: 1.35rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="expiredMsg">
+  <h1 style="margin:0 0 8px">This page has expired</h1>
+  <p style="margin:0;opacity:.9">Team Picnic 2026 details were available until 30 Nov 2026.</p>
+</div>
+
+<header class="hero">
+  <h1>Team Picnic 2026</h1>
+  <div class="hero-meta">
+    <span>AASHAR + CDMS + Plantric</span>
+    <span>Jahania Sea Beach, Astaranga</span>
+  </div>
+  <div class="hero-meta">
+    <span>&#128197; Sunday, 29 Nov 2026</span>
+    <span>&#9200; 6:30 &ndash; 7:00 AM</span>
+    <span>&#128205; OCAct Tower</span>
+  </div>
+</header>
+
+<main class="container">
+
+  <section class="stats">
+    <div class="stat clickable" id="statContrib" role="button" tabindex="0" title="Manage contributions" style="--accent:#4f46e5"><div class="label">Contributions</div><div class="value" id="contribValue">&#8377;23,000</div><div class="hint" id="contribHint">Bonus &#8377;1,000</div></div>
+    <div class="stat clickable" id="statExp" role="button" tabindex="0" title="Show expenses" style="--accent:#e11d48"><div class="label">Expenses</div><div class="value">&#8377;22,380</div><div class="hint">8 items</div></div>
+    <div class="stat" style="--accent:#16a34a"><div class="label">Balance left</div><div class="value" id="balValue">&#8377;620</div><div class="hint" id="balHint">Incl. bonus &#8377;1,620</div></div>
+    <div class="stat" style="--accent:#0ea5e9"><div class="label">Participants</div><div class="value">22</div><div class="hint">Motton 9 &middot; Chicken 6 &middot; Veg 3</div></div>
+    <div class="stat" style="--accent:#f59e0b"><div class="label">Advance given</div><div class="value">&#8377;1,200</div><div class="hint">Gadi &amp; Pindi</div></div>
+  </section>
+
+  <section class="card block">
+    <h2>Menu</h2>
+    <div class="menu-grid">
+      <div class="menu-item" style="--mc:#f97316">
+        <b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M6 12a6 6 0 0 0 12 0"/><path d="M9 7c0-1.5 1-2 1-3.5M13 7c0-1.5 1-2 1-3.5"/></svg>Item starter</b>
+        <div class="chips">
+          <span class="chip">Chicken pakoda</span><span class="chip">Chicken kasa</span>
+          <span class="chip">Mushroom salt &amp; paper</span><span class="chip">Kobi pakoda</span>
+        </div>
+      </div>
+      <div class="menu-item" style="--mc:#16a34a">
+        <b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16a8 8 0 0 1-16 0z"/><path d="M8 7c0-1 1-1.5 1-3M12 7c0-1 1-1.5 1-3"/></svg>Item main course</b>
+        <div class="chips">
+          <span class="chip">Rice</span><span class="chip">Dal</span><span class="chip">Salad</span>
+          <span class="chip">Pampad</span><span class="chip">Motton curry</span><span class="chip">Chicken kasa</span>
+          <span class="chip">Chilli chicken (optional)</span><span class="chip">Chilli mushroom</span>
+          <span class="chip">Mushroom masala</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid">
+
+    <div class="card">
+      <h2>Expense breakdown</h2>
+      <div class="chart-box"><canvas id="expensePie"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>Expenses by item</h2>
+        <button class="icon-btn" id="openExp" aria-label="Show expenses table" title="Show expenses table">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg>
+        </button>
+      </div>
+      <div class="chart-box"><canvas id="expenseBar"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h2>Participants by category</h2>
+      <div class="chart-box"><canvas id="participantPie"></canvas></div>
+    </div>
+
+  </div>
+
+  <section class="card block">
+    <h2>Shopping list <span class="count">41 items</span></h2>
+
+    <div class="sgroup" style="--gc:#4f46e5">
+      <div class="sgroup-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/></svg>
+        Grocery <span class="gcount">22</span>
+      </div>
+      <div class="items-grid">
+        <div class="item-tile"><span>Rice</span><span class="q">3 kg</span></div>
+        <div class="item-tile"><span>Dal</span><span class="q">1 kg</span></div>
+        <div class="item-tile"><span>S Oil</span><span class="q">2 l</span></div>
+        <div class="item-tile"><span>M Oil</span><span class="q">1 l + 200 ml</span></div>
+        <div class="item-tile"><span>Curd</span><span class="q">4 pkt</span></div>
+        <div class="item-tile"><span>Haldi Masala</span><span class="q">100 g</span></div>
+        <div class="item-tile"><span>Chili Masala</span><span class="q">50 g</span></div>
+        <div class="item-tile"><span>Chicken Masala</span><span class="q">50 g</span></div>
+        <div class="item-tile"><span>Meat Masala</span><span class="q">50 g</span></div>
+        <div class="item-tile"><span>Jira Masala</span><span class="q">50 g</span></div>
+        <div class="item-tile"><span>Dhania Masala</span><span class="q">50 g</span></div>
+        <div class="item-tile"><span>Gota Masala</span><span class="q">40 r</span></div>
+        <div class="item-tile"><span>Garam Masala</span><span class="q">50 g</span></div>
+        <div class="item-tile"><span>Salt</span><span class="q">500 g</span></div>
+        <div class="item-tile"><span>Black Paper</span><span class="q">10 r</span></div>
+        <div class="item-tile"><span>Chat Masala</span><span class="q">50 g</span></div>
+        <div class="item-tile"><span>Chilli Sauce</span><span class="q">1 kg</span></div>
+        <div class="item-tile"><span>Tomato Sauce</span><span class="q">1 kg</span></div>
+        <div class="item-tile"><span>Corn Flour</span><span class="q">1 kg</span></div>
+        <div class="item-tile"><span>White Rashi</span><span class="q">250 g</span></div>
+        <div class="item-tile"><span>Pampad</span><span class="q">2 pkt</span></div>
+        <div class="item-tile"><span>Methi Leaves</span><span class="q">2 pkt</span></div>
+      </div>
+    </div>
+
+    <div class="sgroup" style="--gc:#e11d48">
+      <div class="sgroup-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7"/><path d="M12 5V2"/></svg>
+        Non-veg <span class="gcount">3</span>
+      </div>
+      <div class="items-grid">
+        <div class="item-tile"><span>Chicken</span><span class="q">6 kg</span></div>
+        <div class="item-tile"><span>Kasa</span><span class="q">3 kg</span></div>
+        <div class="item-tile"><span>Motton</span><span class="q">3 kg</span></div>
+      </div>
+    </div>
+
+    <div class="sgroup" style="--gc:#16a34a">
+      <div class="sgroup-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 6-13 14-14 0 8-5 14-13 14z"/><path d="M5 19l7-7"/></svg>
+        Vegetable <span class="gcount">9</span>
+      </div>
+      <div class="items-grid">
+        <div class="item-tile"><span>Potato</span><span class="q">1.5 kg</span></div>
+        <div class="item-tile"><span>Onion</span><span class="q">6 kg</span></div>
+        <div class="item-tile"><span>Ada</span><span class="q">750 g</span></div>
+        <div class="item-tile"><span>Garlic</span><span class="q">1.2 kg</span></div>
+        <div class="item-tile"><span>Kakudi</span><span class="q">3 kg</span></div>
+        <div class="item-tile"><span>Tomato</span><span class="q">3 kg</span></div>
+        <div class="item-tile"><span>Capsicum</span><span class="q">1 kg</span></div>
+        <div class="item-tile"><span>Dhania</span><span class="q">4 b</span></div>
+        <div class="item-tile"><span>Chilli</span><span class="q">20 r</span></div>
+      </div>
+    </div>
+
+    <div class="sgroup" style="--gc:#f59e0b">
+      <div class="sgroup-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 6 0 0 1 16 0z"/><path d="M9 12v6h6v-6"/></svg>
+        Mushroom / Paneer <span class="gcount">2</span>
+      </div>
+      <div class="items-grid">
+        <div class="item-tile"><span>Mushroom</span><span class="q">1.5 kg</span></div>
+        <div class="item-tile"><span>Paneer</span><span class="q">500 g</span></div>
+      </div>
+    </div>
+
+    <div class="sgroup" style="--gc:#0ea5e9">
+      <div class="sgroup-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/></svg>
+        Plates &amp; supplies <span class="gcount">5</span>
+      </div>
+      <div class="items-grid">
+        <div class="item-tile"><span>Plate big</span><span class="q">50 p</span></div>
+        <div class="item-tile"><span>Plate small</span><span class="q">2 p</span></div>
+        <div class="item-tile"><span>Tissue</span><span class="q">4 p</span></div>
+        <div class="item-tile"><span>Water bottle</span><span class="q">3 p</span></div>
+        <div class="item-tile"><span>Dana</span><span class="q">30 p</span></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="modal-overlay" id="expModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="expTitle">
+    <div class="modal-head">
+      <h2 id="expTitle">Expenses</h2>
+      <button class="modal-close" id="closeExp" aria-label="Close">&times;</button>
+    </div>
+    <table>
+      <thead><tr><th>Item</th><th class="num">Amount (&#8377;)</th></tr></thead>
+      <tbody>
+        <tr><td>Grocery</td><td class="num">4,000</td></tr>
+        <tr><td>Pindi</td><td class="num">2,000</td></tr>
+        <tr><td>Vegetable</td><td class="num">2,000</td></tr>
+        <tr><td>Gadi</td><td class="num">8,500</td></tr>
+        <tr><td>Broiler Chicken</td><td class="num">1,380</td></tr>
+        <tr><td>Color Bird</td><td class="num">900</td></tr>
+        <tr><td>Motton</td><td class="num">2,600</td></tr>
+        <tr><td>BF</td><td class="num">1,000</td></tr>
+        <tr class="total"><td>Total</td><td class="num">22,380</td></tr>
+      </tbody>
+    </table>
+    <h3>Advance</h3>
+    <table>
+      <thead><tr><th>Item</th><th class="num">Amount (&#8377;)</th></tr></thead>
+      <tbody>
+        <tr><td>Gadi</td><td class="num">1,000</td></tr>
+        <tr><td>Pindi</td><td class="num">200</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-overlay" id="contribModal" hidden>
+  <div class="modal wide-modal" role="dialog" aria-modal="true" aria-labelledby="contribTitle">
+    <div class="modal-head">
+      <h2 id="contribTitle">Contributions</h2>
+      <button class="modal-close" id="closeContrib" aria-label="Close">&times;</button>
+    </div>
+    <div class="csum">
+      <div class="ci" style="--ic:#4f46e5">
+        <i><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h10M7 13h6"/></svg></i>
+        <div><span>Expected</span><b id="cExp">&#8377;0</b></div>
+      </div>
+      <div class="ci" style="--ic:#16a34a">
+        <i><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></i>
+        <div><span>Paid</span><b id="cPaid">&#8377;0</b></div>
+      </div>
+      <div class="ci" style="--ic:#0ea5e9">
+        <i><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8-4.3-4.1 5.9-.9z"/></svg></i>
+        <div><span>Extra bonus</span><b id="cExtra">&#8377;0</b></div>
+      </div>
+    </div>
+    <div class="ctable-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Cat</th><th class="num">Amount</th><th class="center">Paid</th><th class="num">Extra (&#8377;)</th><th class="num">Total</th></tr></thead>
+        <tbody id="contribBody"></tbody>
+      </table>
+    </div>
+    <p class="hint-note">Tick Paid when money is received. Type any extra amount in Extra. Changes are saved in this browser.</p>
+  </div>
+</div>
+
+<script>
+  const expenseLabels = ['Grocery','Pindi','Vegetable','Gadi','Broiler Chicken','Color Bird','Motton','BF'];
+  const expenseValues = [4000,2000,2000,8500,1380,900,2600,1000];
+  const palette = ['#4f46e5','#16a34a','#f59e0b','#e11d48','#9333ea','#0ea5e9','#db2777','#64748b'];
+
+  Chart.defaults.font.family = '"Segoe UI", system-ui, Arial, sans-serif';
+  Chart.defaults.color = getComputedStyle(document.body).color;
+
+  new Chart(document.getElementById('expensePie'), {
+    type: 'doughnut',
+    data: {
+      labels: expenseLabels,
+      datasets: [{ data: expenseValues, backgroundColor: palette, borderWidth: 2, borderColor: 'transparent' }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right' },
+        tooltip: { callbacks: { label: c => `${c.label}: ₹${c.parsed.toLocaleString()}` } }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('participantPie'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Motton', 'Chicken', 'Veg', 'Not set'],
+      datasets: [{ data: [9, 6, 3, 4], backgroundColor: ['#4f46e5','#16a34a','#f59e0b','#94a3b8'], borderWidth: 2, borderColor: 'transparent' }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'right' } }
+    }
+  });
+
+  new Chart(document.getElementById('expenseBar'), {
+    type: 'bar',
+    data: {
+      labels: expenseLabels,
+      datasets: [{ label: 'Amount (₹)', data: expenseValues, backgroundColor: palette, borderRadius: 8 }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,.15)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Expenses popup
+  const modal = document.getElementById('expModal');
+  const openBtn = document.getElementById('openExp');
+  const closeBtn = document.getElementById('closeExp');
+  const showModal = () => { modal.hidden = false; closeBtn.focus(); };
+  const hideModal = () => { modal.hidden = true; openBtn.focus(); };
+  openBtn.addEventListener('click', showModal);
+  const statExp = document.getElementById('statExp');
+  statExp.addEventListener('click', showModal);
+  statExp.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showModal(); } });
+  closeBtn.addEventListener('click', hideModal);
+  modal.addEventListener('click', e => { if (e.target === modal) hideModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) hideModal(); });
+  // ---- Contributions (interactive) ----
+  const STORE_KEY = 'picnic-contributions-v1';
+  const CAT_NAME = { M: 'Motton', C: 'Chicken', V: 'Veg' };
+  const EXPENSE_TOTAL = expenseValues.reduce((a, b) => a + b, 0);
+  const people = [
+    { name: 'Abhiram', cat: 'M', amt: 1200 },
+    { name: 'Debadutta', cat: 'M', amt: 1200 },
+    { name: 'Sujit', cat: '', amt: 1200 },
+    { name: 'Kamal', cat: 'M', amt: 1200 },
+    { name: 'Manoj', cat: 'M', amt: 1200 },
+    { name: 'Deepak', cat: 'C', amt: 1000, paid: true },
+    { name: 'Rajendra', cat: 'M', amt: 1000, paid: true },
+    { name: 'Siddhant', cat: 'M', amt: 1000 },
+    { name: 'Gopi', cat: '', amt: 1000 },
+    { name: 'Mamata', cat: 'C', amt: 1000 },
+    { name: 'Somen', cat: 'C', amt: 1000, paid: true, extra: 1000 },
+    { name: 'Prakash', cat: 'V', amt: 1000, paid: true },
+    { name: 'Rati', cat: '', amt: 1000 },
+    { name: 'Asit', cat: 'V', amt: 1000 },
+    { name: 'Omm', cat: 'M', amt: 1000 },
+    { name: 'Abhisek', cat: 'M', amt: 1000 },
+    { name: 'Rakesh', cat: '', amt: 1000 },
+    { name: 'Dibyarupa', cat: 'V', amt: 1000 },
+    { name: 'Pratik', cat: 'C', amt: 1000 },
+    { name: 'Shubam', cat: 'C', amt: 1000 },
+    { name: 'Prashanti', cat: 'M', amt: 1000 },
+    { name: 'Sambit', cat: 'C', amt: 1000 }
+  ];
+
+  // Restore saved paid/extra values (per browser)
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+    if (Array.isArray(saved) && saved.length === people.length) {
+      saved.forEach((s, i) => { people[i].paid = !!s.paid; people[i].extra = Math.max(0, Number(s.extra) || 0); });
+    }
+  } catch (e) { /* storage unavailable: use defaults */ }
+
+  const saveState = () => {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(people.map(p => ({ paid: !!p.paid, extra: p.extra || 0 }))));
+    } catch (e) { /* ignore */ }
+  };
+  const inr = n => (n < 0 ? '-' : '') + '₹' + Math.abs(Math.round(n)).toLocaleString('en-IN');
+  const totals = () => {
+    let total = 0, collected = 0;
+    people.forEach(p => {
+      total += p.amt + (p.extra || 0);
+      collected += (p.paid ? p.amt : 0) + (p.extra || 0);
+    });
+    return { total, collected, pending: total - collected };
+  };
+
+  const contribBody = document.getElementById('contribBody');
+  people.forEach((p, i) => {
+    const tr = document.createElement('tr');
+    const catHtml = p.cat
+      ? `<span class="tag ${p.cat}">${CAT_NAME[p.cat]}</span>`
+      : '<span class="none">&ndash;</span>';
+    tr.innerHTML = `
+      <td>${p.name}</td>
+      <td>${catHtml}</td>
+      <td class="num">${p.amt.toLocaleString('en-IN')}</td>
+      <td class="center"><input type="checkbox" data-i="${i}" aria-label="Paid by ${p.name}"></td>
+      <td class="num"><input type="number" class="extra-in" min="0" step="100" data-i="${i}" aria-label="Extra amount from ${p.name}"></td>
+      <td class="num rowtot" data-i="${i}"></td>`;
+    tr.querySelector('input[type="checkbox"]').checked = !!p.paid;
+    tr.querySelector('.extra-in').value = p.extra || 0;
+    contribBody.appendChild(tr);
+  });
+
+  function refreshContributions() {
+    contribBody.querySelectorAll('.rowtot').forEach(td => {
+      const p = people[+td.dataset.i];
+      td.textContent = (p.amt + (p.extra || 0)).toLocaleString('en-IN');
+    });
+    const t = totals();
+    const baseSum = people.reduce((a, p) => a + p.amt, 0);
+    const bonusSum = people.reduce((a, p) => a + (p.extra || 0), 0);
+    const balance = baseSum - EXPENSE_TOTAL;
+    const balanceWithBonus = balance + bonusSum;
+    const expectedSum = people.reduce((a, p) => a + p.amt, 0);
+    const paidSum = people.reduce((a, p) => a + (p.paid ? p.amt : 0), 0);
+    const extraSum = people.reduce((a, p) => a + (p.extra || 0), 0);
+    document.getElementById('cExp').textContent = inr(expectedSum);
+    document.getElementById('cPaid').textContent = inr(paidSum);
+    document.getElementById('cExtra').textContent = inr(extraSum);
+    document.getElementById('contribValue').textContent = inr(baseSum);
+    document.getElementById('contribHint').textContent = `Bonus ${inr(bonusSum)}`;
+    document.getElementById('balValue').textContent = inr(balance);
+    document.getElementById('balHint').textContent = `Incl. bonus ${inr(balanceWithBonus)}`;
+  }
+
+  const onContribChange = e => {
+    const el = e.target;
+    const p = people[+el.dataset.i];
+    if (!p) return;
+    if (el.type === 'checkbox') p.paid = el.checked;
+    if (el.classList.contains('extra-in')) p.extra = Math.max(0, Number(el.value) || 0);
+    saveState();
+    refreshContributions();
+  };
+  contribBody.addEventListener('change', onContribChange);
+  contribBody.addEventListener('input', onContribChange);
+  refreshContributions();
+
+  // Contributions popup
+  const statContrib = document.getElementById('statContrib');
+  const contribModal = document.getElementById('contribModal');
+  const closeContrib = document.getElementById('closeContrib');
+  const openContrib = () => { contribModal.hidden = false; closeContrib.focus(); };
+  const hideContrib = () => { contribModal.hidden = true; statContrib.focus(); };
+  statContrib.addEventListener('click', openContrib);
+  statContrib.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openContrib(); } });
+  closeContrib.addEventListener('click', hideContrib);
+  contribModal.addEventListener('click', e => { if (e.target === contribModal) hideContrib(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !contribModal.hidden) hideContrib(); });
+</script>
+</body>
+</html>
