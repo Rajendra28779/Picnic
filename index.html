@@ -252,10 +252,10 @@
 <main class="container">
 
   <section class="stats">
-    <div class="stat clickable" id="statContrib" role="button" tabindex="0" title="Manage contributions" style="--accent:#4f46e5"><div class="label">Contributions</div><div class="value" id="contribValue">&#8377;23,000</div><div class="hint" id="contribHint">Bonus &#8377;1,000</div></div>
+    <div class="stat clickable" id="statContrib" role="button" tabindex="0" title="Manage contributions" style="--accent:#4f46e5"><div class="label">Contributions</div><div class="value" id="contribValue">&#8377;23,000</div><div class="hint" id="contribHint">Collected &#8377;11,000 · Bonus &#8377;3,000</div></div>
     <div class="stat clickable" id="statExp" role="button" tabindex="0" title="Show expenses" style="--accent:#e11d48"><div class="label">Expenses</div><div class="value">&#8377;23,180</div><div class="hint">9 items</div></div>
     <div class="stat" style="--accent:#16a34a"><div class="label">Balance left</div><div class="value" id="balValue">&#8377;620</div><div class="hint" id="balHint">Incl. bonus &#8377;1,620</div></div>
-    <div class="stat" style="--accent:#0ea5e9"><div class="label">Participants</div><div class="value" id="partCount">21</div><div class="hint" id="partHint">Motton 10 &middot; Chicken 8 &middot; Veg 3</div></div>
+    <div class="stat" style="--accent:#0ea5e9"><div class="label">Participants</div><div class="value" id="partCount">20</div><div class="hint" id="partHint">Motton 10 &middot; Chicken 8 &middot; Veg 2</div></div>
     <div class="stat" style="--accent:#f59e0b"><div class="label">Advance given</div><div class="value">&#8377;1,000</div><div class="hint">Gadi</div></div>
   </section>
 
@@ -530,22 +530,21 @@
   const EXPENSE_TOTAL = expenseValues.reduce((a, b) => a + b, 0);
   const people = [
     { name: 'Abhiram', cat: 'M', amt: 1000 },
-    { name: 'Debadutta', cat: 'M', amt: 1000 },
+    { name: 'Debadutta', cat: 'M', amt: 1000, paid: true },
     { name: 'Sujit', cat: 'M', amt: 1000, paid: true },
     { name: 'Kamal', cat: 'M', amt: 1000 },
     { name: 'Manoj', cat: 'M', amt: 1000, paid: true, extra: 1000 },
     { name: 'Deepak', cat: 'C', amt: 1000, paid: true },
     { name: 'Rajendra', cat: 'M', amt: 1000, paid: true },
     { name: 'Siddhant', cat: 'M', amt: 1000 },
-    { name: 'Gopi', cat: 'C', amt: 1000 },
-    { name: 'Mamata', cat: 'C', amt: 1000 },
+    { name: 'Gopi', cat: 'C', amt: 1000, paid: true },
+    { name: 'Mamata', cat: 'C', amt: 1000, paid: true, extra: 1000 },
     { name: 'Somen', cat: 'C', amt: 1000, paid: true, extra: 1000 },
     { name: 'Prakash', cat: 'V', amt: 1000, paid: true },
     { name: 'Asit', cat: 'V', amt: 1000 },
-    { name: 'Omm', cat: 'M', amt: 1000 },
+    { name: 'Omm', cat: 'M', amt: 1000, paid: true },
     { name: 'Abhisek', cat: 'M', amt: 1000 },
     { name: 'Rakesh', cat: 'C', amt: 1000 },
-    { name: 'Dibyarupa', cat: 'V', amt: 1000 },
     { name: 'Pratik', cat: 'C', amt: 1000 },
     { name: 'Shubam', cat: 'C', amt: 1000, paid: true },
     { name: 'Prashanti', cat: 'M', amt: 1000 },
@@ -586,6 +585,7 @@
     const t = totals();
     const baseSum = people.reduce((a, p) => a + p.amt, 0);
     const bonusSum = people.reduce((a, p) => a + (p.extra || 0), 0);
+    const collectedSum = people.reduce((a, p) => a + (p.paid ? p.amt : 0), 0);
     const balance = baseSum - EXPENSE_TOTAL;
     const balanceWithBonus = balance + bonusSum;
     const expectedSum = people.reduce((a, p) => a + p.amt, 0);
@@ -595,7 +595,7 @@
     document.getElementById('cPaid').textContent = inr(paidSum);
     document.getElementById('cExtra').textContent = inr(extraSum);
     document.getElementById('contribValue').textContent = inr(baseSum);
-    document.getElementById('contribHint').textContent = `Bonus ${inr(bonusSum)}`;
+    document.getElementById('contribHint').textContent = `Collected ${inr(collectedSum)} · Bonus ${inr(bonusSum)}`;
     document.getElementById('balValue').textContent = inr(balance);
     document.getElementById('balHint').textContent = `Incl. bonus ${inr(balanceWithBonus)}`;
   }
