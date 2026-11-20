@@ -260,9 +260,9 @@
 
   <section class="stats">
     <div class="stat clickable" id="statContrib" role="button" tabindex="0" title="Manage contributions" style="--accent:#4f46e5"><div class="label">Contributions</div><div class="value" id="contribValue">&#8377;23,000</div><div class="hint" id="contribHint">Collected &#8377;11,000 · Bonus &#8377;3,000</div></div>
-    <div class="stat clickable" id="statExp" role="button" tabindex="0" title="Show expenses" style="--accent:#e11d48"><div class="label">Expenses</div><div class="value">&#8377;23,180</div><div class="hint">9 items</div></div>
+    <div class="stat clickable" id="statExp" role="button" tabindex="0" title="Show expenses" style="--accent:#e11d48"><div class="label">Expenses</div><div class="value">&#8377;22,000</div><div class="hint">9 items</div></div>
     <div class="stat" style="--accent:#16a34a"><div class="label">Balance left</div><div class="value" id="balValue">&#8377;620</div><div class="hint" id="balHint">Incl. bonus &#8377;1,620</div></div>
-    <div class="stat" style="--accent:#0ea5e9"><div class="label">Participants</div><div class="value" id="partCount">20</div><div class="hint" id="partHint">Motton 10 &middot; Chicken 8 &middot; Veg 2</div></div>
+    <div class="stat" style="--accent:#0ea5e9"><div class="label">Participants</div><div class="value" id="partCount">18</div><div class="hint" id="partHint">Motton 9 &middot; Chicken 7 &middot; Veg 2</div></div>
     <div class="stat" style="--accent:#f59e0b"><div class="label">Advance given</div><div class="value">&#8377;1,000</div><div class="hint">Gadi</div></div>
   </section>
 
@@ -347,9 +347,9 @@
         Non-veg <span class="gcount">3</span>
       </div>
       <div class="items-grid">
-        <div class="item-tile"><span>Chicken</span><span class="q">6 kg</span></div>
+        <div class="item-tile"><span>Chicken</span><span class="q">5 kg</span></div>
         <div class="item-tile"><span>Kasa</span><span class="q">3 kg</span></div>
-        <div class="item-tile"><span>Motton</span><span class="q">3.5 kg</span></div>
+        <div class="item-tile"><span>Motton</span><span class="q">3 kg</span></div>
       </div>
     </div>
 
@@ -379,7 +379,7 @@
       </div>
       <div class="items-grid">
         <div class="item-tile"><span>Mushroom</span><span class="q">1 kg</span></div>
-        <div class="item-tile"><span>Paneer</span><span class="q">500 g</span></div>
+        <div class="item-tile"><span>Paneer</span><span class="q">300 g</span></div>
       </div>
     </div>
 
@@ -431,14 +431,14 @@
       <tbody>
         <tr><td>Grocery</td><td class="num">4,000</td></tr>
         <tr><td>Pindi</td><td class="num">2,000</td></tr>
-        <tr><td>Vegetable</td><td class="num">2,000</td></tr>
+        <tr><td>Vegetable</td><td class="num">1,500</td></tr>
         <tr><td>Gadi</td><td class="num">8,500</td></tr>
-        <tr><td>Broiler Chicken</td><td class="num">1,380</td></tr>
+        <tr><td>Broiler Chicken</td><td class="num">1,200</td></tr>
         <tr><td>Color Bird</td><td class="num">900</td></tr>
-        <tr><td>Motton</td><td class="num">3,000</td></tr>
+        <tr><td>Motton</td><td class="num">2,500</td></tr>
         <tr><td>Breakfast</td><td class="num">1,000</td></tr>
         <tr><td>Cake (Mamta)</td><td class="num">400</td></tr>
-        <tr class="total"><td>Total</td><td class="num">23,180</td></tr>
+        <tr class="total"><td>Total</td><td class="num">22,000</td></tr>
       </tbody>
     </table>
     <h3>Advance</h3>
@@ -483,7 +483,7 @@
 
 <script>
   const expenseLabels = ['Grocery','Pindi','Vegetable','Gadi','Broiler Chicken','Color Bird','Motton','Breakfast','Cake (Mamta)'];
-  const expenseValues = [4000,2000,2000,8500,1380,900,3000,1000,400];
+  const expenseValues = [4000,2000,1500,8500,1200,900,2500,1000,400];
   const palette = ['#4f46e5','#16a34a','#f59e0b','#e11d48','#9333ea','#0ea5e9','#db2777','#64748b','#14b8a6'];
 
   Chart.defaults.font.family = '"Segoe UI", system-ui, Arial, sans-serif';
@@ -539,22 +539,20 @@
     { name: 'Abhiram', cat: 'M', amt: 1000 },
     { name: 'Debadutta', cat: 'M', amt: 1000, paid: true },
     { name: 'Sujit', cat: 'M', amt: 1000, paid: true },
-    { name: 'Kamal', cat: 'M', amt: 1000 },
+    { name: 'Kamal', cat: 'M', amt: 1000, paid: true },
     { name: 'Manoj', cat: 'M', amt: 1000, paid: true, extra: 1000 },
     { name: 'Deepak', cat: 'C', amt: 1000, paid: true },
     { name: 'Rajendra', cat: 'M', amt: 1000, paid: true },
-    { name: 'Siddhant', cat: 'M', amt: 1000 },
+    { name: 'Siddhant', cat: 'M', amt: 1000, paid: true },
     { name: 'Gopi', cat: 'C', amt: 1000, paid: true },
     { name: 'Mamata', cat: 'C', amt: 1000, paid: true, extra: 1000 },
     { name: 'Somen', cat: 'C', amt: 1000, paid: true, extra: 1000 },
     { name: 'Prakash', cat: 'V', amt: 1000, paid: true },
-    { name: 'Asit', cat: 'V', amt: 1000 },
+    { name: 'Asit', cat: 'V', amt: 1000, paid: true },
     { name: 'Omm', cat: 'M', amt: 1000, paid: true },
-    { name: 'Abhisek', cat: 'M', amt: 1000 },
-    { name: 'Rakesh', cat: 'C', amt: 1000 },
-    { name: 'Pratik', cat: 'C', amt: 1000 },
-    { name: 'Shubam', cat: 'C', amt: 1000, paid: true },
-    { name: 'Prashanti', cat: 'M', amt: 1000 },
+    { name: 'Abhisek', cat: 'M', amt: 1000, paid: true },
+    { name: 'Rakesh', cat: 'C', amt: 1000, paid: true },
+    { name: 'Pratik', cat: 'C', amt: 1000, paid: true },
     { name: 'Sambit', cat: 'C', amt: 1000, paid: true }
   ];
 
